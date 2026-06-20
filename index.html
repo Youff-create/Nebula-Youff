@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Nebula — Youssef's Orbit</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root{
+  --void:#0B0E2E;
+  --void-deep:#060818;
+  --nebula-violet:#6B4FE8;
+  --nebula-magenta:#D946A8;
+  --starlight-cyan:#4FD6E8;
+  --gold:#F0B860;
+  --text:#F4F2FA;
+  --text-dim:#9C97C4;
+  --text-faint:#5F5A8C;
+  --glass:rgba(244,242,250,0.06);
+  --glass-border:rgba(244,242,250,0.10);
+  --danger:#E8607A;
+  --success:#4FE8A3;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overscroll-behavior:none;}
+body{
+  background:var(--void);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  overflow-x:hidden;
+  min-height:100vh;
+  min-height:100dvh;
+}
+h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
+
+#nebula-canvas{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  width:100%;
+  height:100%;
+}
+
+.app{
+  position:relative;
+  z-index:1;
+  max-width:520px;
+  margin:0 auto;
+  padding:env(safe-area-inset-top) 16px calc(90px + env(safe-area-inset-bottom));
+  min-height:100vh;
+}
+
+/* ---------- HEADER ---------- */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px 4px 14px;
+}
+.brand{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.brand .eyebrow{
+  font-size:11px;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--text-faint);
+  font-weight:600;
+}
+.brand h1{
+  font-size:22px;
+  font-weight:700;
+  background:linear-gradient(90deg,var(--text) 30%,var(--starlight-cyan));
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.points-pill{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  backdrop-filter:blur(12px);
+  padding:9px 14px;
+  border-radius:100px;
+}
+.points-pill .num{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:16px;
+  color:var(--gold);
+}
+.points-pill .star-ic{font-size:14px;}
+
+/* ---------- TABS ---------- */
+.tabs{
+  display:flex;
+  gap:6px;
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:14px;
+  padding:4px;
+  margin-bottom:18px;
+  backdrop-filter:blur(12px);
+}
+.tab{
+  flex:1;
+  text-align:center;
+  padding:9px 4px;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:600;
+  color:var(--text-dim);
+  cursor:pointer;
+  transition:all .25s ease;
+  user-select:none;
+}
+.tab.active{
+  background:linear-gradient(135deg,var(--nebula-violet),var(--nebula-magenta));
+  color:#fff;
+  box-shadow:0 4px 16px rgba(107,79,232,0.4);
+}
+
+.view{display:none;animation:fadeIn .35s ease;}
+.view.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* ---------- SECTION LABEL ---------- */
+.section-label{
+  font-size:11px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--text-faint);
+  font-weight:700;
+  margin:22px 4px 10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.section-label .line{flex:1;height:1px;background:linear-gradient(90deg,var(--glass-border),transparent);}
+
+/* ---------- ORBIT (week view) ---------- */
+.orbit-wrap{
+  position:relative;
+  padding:8px 4px 4px;
+}
+.streak-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:14px;
+  padding:12px 14px;
+  margin-bottom:8px;
+}
+.streak-row .sname{
+  font-size:13px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.streak-row .sdays{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:15px;
+  color:var(--starlight-cyan);
+}
+.streak-row .sdays.none{
+  color:var(--text-faint);
+  font-size:12px;
+  font-weight:500;
+  font-family:'Inter',sans-serif;
+}
+
+.rules-card{
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:18px;
+  padding:14px 16px 8px;
+  margin-bottom:14px;
+  backdrop-filter:blur(12px);
+}
+.rules-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  cursor:pointer;
+  user-select:none;
+}
+.rules-title{
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+.rules-chevron{
+  font-size:11px;
+  color:var(--text-faint);
+  transition:transform .25s ease;
+}
+.rules-chevron.open{transform:rotate(180deg);}
+.rules-body{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .35s ease;
+}
+.rules-body.open{max-height:900px;}
+.rules-group{margin:12px 0 8px;}
+.rules-group-title{
+  font-size:10px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--starlight-cyan);
+  font-weight:700;
+  margin-bottom:6px;
+}
+.rules-line{
+  font-size:12.5px;
+  color:var(--text-dim);
+  line-height:1.6;
+  padding-left:14px;
+  position:relative;
+  margin-bottom:4px;
+}
+.rules-line::before{
+  content:'·';
+  position:absolute;
+  left:2px;
+  color:var(--nebula-magenta);
+  font-weight:900;
+}
+
+.quote-card{
+  position:relative;
+  background:linear-gradient(135deg,rgba(107,79,232,0.16),rgba(217,70,168,0.10));
+  border:1px solid rgba(217,70,168,0.22);
+  border-radius:18px;
+  padding:18px 18px 16px;
+  margin-bottom:18px;
+  overflow:hidden;
+}
+.quote-card::before{
+  content:'';
+  position:absolute;
+  top:-30%;right:-15%;
+  width:140px;height:140px;
+  background:radial-gradient(circle,rgba(79,214,232,0.18),transparent 70%);
+  pointer-events:none;
+}
+.quote-eyebrow{
+  font-size:10px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--starlight-cyan);
+  font-weight:700;
+  margin-bottom:8px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.quote-text{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:16px;
+  font-weight:500;
+  line-height:1.45;
+  color:var(--text);
+  position:relative;
+  z-index:1;
+}
+.quote-tag{
+  margin-top:10px;
+  font-size:11px;
+  color:var(--text-faint);
+  font-style:italic;
+}
+
+.day-card{
+  position:relative;
+  display:flex;
+  gap:14px;
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:18px;
+  padding:14px;
+  margin-bottom:10px;
+  backdrop-filter:blur(12px);
+  transition:border-color .2s ease;
+}
+.day-card.today{
+  border-color:rgba(79,214,232,0.5);
+  box-shadow:0 0 0 1px rgba(79,214,232,0.15), 0 8px 24px rgba(79,214,232,0.08);
+}
+.day-node{
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:13px;
+  background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.15), transparent 60%), linear-gradient(135deg,var(--nebula-violet),var(--nebula-magenta));
+  position:relative;
+}
+.day-node.done-full{box-shadow:0 0 0 2px var(--gold), 0 0 16px rgba(240,184,96,0.5);}
+.day-node .ring{
+  position:absolute;
+  inset:-4px;
+  border-radius:50%;
+  border:2px solid transparent;
+}
+.day-body{flex:1;min-width:0;}
+.day-body .dname{font-size:14px;font-weight:700;}
+.day-body .dsub{font-size:11px;color:var(--text-dim);margin-top:1px;}
+.day-tasks{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.task{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:13px;
+  padding:7px 9px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.03);
+  cursor:pointer;
+  transition:background .2s ease;
+}
+.task:active{background:rgba(255,255,255,0.08);}
+.task .box{
+  width:18px;height:18px;border-radius:6px;
+  border:1.5px solid var(--text-faint);
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s ease;
+}
+.task.checked .box{
+  background:linear-gradient(135deg,var(--starlight-cyan),var(--nebula-violet));
+  border-color:transparent;
+}
+.task.checked .box::after{content:'✓';font-size:11px;color:#fff;font-weight:700;}
+.task.checked .label{color:var(--text-dim);text-decoration:line-through;text-decoration-color:var(--text-faint);}
+.task .label{flex:1;}
+.task .pts{font-size:10px;color:var(--gold);font-weight:700;flex-shrink:0;}
+
+/* ---------- SPACED HABITS ---------- */
+.limit-card{
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:10px;
+  backdrop-filter:blur(12px);
+}
+.limit-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.limit-name{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.limit-badge{
+  font-size:10px;
+  font-weight:700;
+  padding:4px 9px;
+  border-radius:100px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+}
+.badge-safe{background:rgba(79,214,232,0.15);color:var(--starlight-cyan);}
+.badge-soon{background:rgba(240,184,96,0.15);color:var(--gold);}
+.badge-due{background:rgba(232,96,122,0.15);color:var(--danger);}
+.limit-bar-track{
+  height:6px;
+  border-radius:100px;
+  background:rgba(255,255,255,0.06);
+  margin-top:12px;
+  overflow:hidden;
+}
+.limit-bar-fill{
+  height:100%;
+  border-radius:100px;
+  background:linear-gradient(90deg,var(--starlight-cyan),var(--nebula-violet));
+  transition:width .4s ease;
+}
+.limit-meta{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
+  font-size:11px;
+  color:var(--text-dim);
+}
+.limit-actions{margin-top:12px;}
+.btn-log{
+  width:100%;
+  padding:10px;
+  border-radius:11px;
+  border:1px solid var(--glass-border);
+  background:rgba(255,255,255,0.04);
+  color:var(--text);
+  font-size:13px;
+  font-weight:600;
+  font-family:inherit;
+}
+.btn-log:active{background:rgba(255,255,255,0.1);}
+.btn-log.warn{
+  border-color:rgba(232,96,122,0.4);
+  color:var(--danger);
+}
+.btn-reset{
+  width:100%;
+  margin-top:8px;
+  padding:9px;
+  border-radius:11px;
+  border:1px solid rgba(232,96,122,0.3);
+  background:rgba(232,96,122,0.08);
+  color:var(--danger);
+  font-size:12px;
+  font-weight:600;
+  font-family:inherit;
+}
+.btn-reset:active{background:rgba(232,96,122,0.18);}
+.confirm-row{
+  display:flex;
+  gap:8px;
+  margin-top:8px;
+}
+.confirm-row .btn-log{flex:1;font-size:12px;padding:9px;}
+.confirm-yes{border-color:rgba(232,96,122,0.5);color:var(--danger);background:rgba(232,96,122,0.1);}
+
+/* ---------- JOURNAL ---------- */
+.journal-input{
+  width:100%;
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:16px;
+  padding:14px;
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  resize:vertical;
+  min-height:100px;
+  backdrop-filter:blur(12px);
+}
+.journal-input::placeholder{color:var(--text-faint);}
+.mood-row{
+  display:flex;
+  gap:8px;
+  margin:12px 0;
+}
+.mood-chip{
+  flex:1;
+  text-align:center;
+  padding:9px 4px;
+  border-radius:11px;
+  border:1px solid var(--glass-border);
+  background:rgba(255,255,255,0.03);
+  font-size:18px;
+  cursor:pointer;
+}
+.mood-chip.selected{
+  border-color:var(--nebula-violet);
+  background:rgba(107,79,232,0.18);
+}
+.btn-save{
+  width:100%;
+  padding:13px;
+  border-radius:13px;
+  border:none;
+  background:linear-gradient(135deg,var(--nebula-violet),var(--nebula-magenta));
+  color:#fff;
+  font-weight:700;
+  font-size:14px;
+  font-family:inherit;
+}
+.reflection-box{
+  margin-top:16px;
+  background:linear-gradient(135deg,rgba(107,79,232,0.12),rgba(217,70,168,0.08));
+  border:1px solid rgba(107,79,232,0.25);
+  border-radius:16px;
+  padding:15px;
+  font-size:13px;
+  line-height:1.55;
+  color:var(--text);
+  display:none;
+}
+.reflection-box.show{display:block;animation:fadeIn .4s ease;}
+.reflection-box .rtitle{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+  color:var(--starlight-cyan);
+  font-weight:700;
+  margin-bottom:8px;
+}
+.entry{
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:14px;
+  padding:12px 14px;
+  margin-bottom:8px;
+}
+.entry-top{display:flex;justify-content:space-between;font-size:11px;color:var(--text-faint);margin-bottom:6px;}
+.entry-text{font-size:13px;color:var(--text-dim);line-height:1.5;}
+
+/* ---------- PROGRESS ---------- */
+.stat-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:6px;
+}
+.stat-card{
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:16px;
+  padding:16px;
+  backdrop-filter:blur(12px);
+}
+.stat-card .sval{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:26px;
+  font-weight:700;
+  background:linear-gradient(90deg,var(--gold),var(--nebula-magenta));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.stat-card .slabel{font-size:11px;color:var(--text-dim);margin-top:4px;}
+.level-card{
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:10px;
+  text-align:center;
+}
+.level-name{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--gold);}
+.level-sub{font-size:11px;color:var(--text-dim);margin-top:3px;}
+.level-track{
+  height:10px;
+  border-radius:100px;
+  background:rgba(255,255,255,0.06);
+  margin-top:14px;
+  overflow:hidden;
+  position:relative;
+}
+.level-fill{
+  height:100%;
+  border-radius:100px;
+  background:linear-gradient(90deg,var(--starlight-cyan),var(--nebula-violet),var(--nebula-magenta));
+  transition:width .5s ease;
+}
+
+/* ---------- BACKUP SECTION ---------- */
+.backup-card{
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:18px;
+  padding:16px;
+  margin-top:10px;
+}
+.backup-row{display:flex;gap:10px;margin-top:12px;}
+.btn-backup{
+  flex:1;
+  padding:11px;
+  border-radius:12px;
+  border:1px solid var(--glass-border);
+  background:rgba(255,255,255,0.04);
+  color:var(--text-dim);
+  font-size:12px;
+  font-weight:600;
+  font-family:inherit;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-backup:active{background:rgba(255,255,255,0.12);}
+.btn-backup.primary{border-color:var(--starlight-cyan);color:var(--starlight-cyan);}
+
+/* ---------- NOTIF ---------- */
+.notif-banner{
+  position:fixed;
+  top:calc(10px + env(safe-area-inset-top));
+  left:16px;right:16px;
+  max-width:488px;
+  margin:0 auto;
+  background:linear-gradient(135deg,rgba(107,79,232,0.95),rgba(217,70,168,0.92));
+  backdrop-filter:blur(16px);
+  border-radius:16px;
+  padding:13px 15px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  z-index:50;
+  transform:translateY(-120%);
+  transition:transform .4s cubic-bezier(.2,.9,.3,1.3);
+  box-shadow:0 12px 30px rgba(0,0,0,0.4);
+}
+.notif-banner.show{transform:translateY(0);}
+.notif-banner .nic{font-size:20px;}
+.notif-banner .ntext{flex:1;font-size:13px;font-weight:600;color:#fff;}
+.notif-banner .nclose{color:rgba(255,255,255,0.8);font-size:18px;padding:2px 6px;}
+
+/* ---------- BOTTOM NAV ---------- */
+.bottomnav{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  z-index:40;
+  background:rgba(11,14,46,0.85);
+  backdrop-filter:blur(20px);
+  border-top:1px solid var(--glass-border);
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+}
+.bn-inner{
+  max-width:520px;
+  margin:0 auto;
+  display:flex;
+  justify-content:space-around;
+}
+.bn-item{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+  color:var(--text-faint);
+  font-size:10px;
+  font-weight:600;
+  cursor:pointer;
+  padding:4px 10px;
+  position:relative;
+}
+.bn-item.active{color:var(--starlight-cyan);}
+.bn-item .ic{font-size:19px;}
+
+.empty-state{
+  text-align:center;
+  padding:30px 20px;
+  color:var(--text-faint);
+  font-size:13px;
+}
+
+.point-toast{
+  position:fixed;
+  bottom:100px;
+  left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:var(--gold);
+  color:#1a1208;
+  font-weight:700;
+  font-size:13px;
+  padding:8px 16px;
+  border-radius:100px;
+  z-index:60;
+  opacity:0;
+  transition:all .3s cubic-bezier(.2,.9,.3,1.3);
+  pointer-events:none;
+  white-space:nowrap;
+}
+.point-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+::-webkit-scrollbar{width:0;height:0;}
+</style>
+</head>
+<body>
+
+<canvas id="nebula-canvas"></canvas>
+
+<div id="loadingScreen" style="position:fixed;inset:0;z-index:100;background:#0B0E2E;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .4s ease;">
+  <div style="width:36px;height:36px;border-radius:50%;border:2.5px solid rgba(244,242,250,0.15);border-top-color:#4FD6E8;animation:spin 0.9s linear infinite;"></div>
+  <div style="font-family:'Space Grotesk',sans-serif;font-size:13px;color:#9C97C4;letter-spacing:0.05em;">Loading your orbit…</div>
+</div>
+
+<div class="notif-banner" id="notifBanner">
+  <span class="nic">✦</span>
+  <span class="ntext" id="notifText"></span>
+  <span class="nclose" id="notifClose">✕</span>
+</div>
+
+<div class="point-toast" id="pointToast"></div>
+
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="eyebrow">Youssef's Orbit</span>
+      <h1>Nebula</h1>
+    </div>
+    <div class="points-pill">
+      <span class="star-ic">⭐</span>
+      <span class="num" id="topPoints">0</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-view="today">Today</div>
+    <div class="tab" data-view="week">Week</div>
+    <div class="tab" data-view="limits">Spacing</div>
+    <div class="tab" data-view="journal">Journal</div>
+    <div class="tab" data-view="progress">Progress</div>
+  </div>
+
+  <!-- TODAY VIEW -->
+  <div class="view active" id="view-today">
+    <div class="rules-card">
+      <div class="rules-header" id="rulesToggle">
+        <div class="rules-title">⚖ The rules</div>
+        <div class="rules-chevron open" id="rulesChevron">▾</div>
+      </div>
+      <div class="rules-body open" id="rulesBody">
+        <div class="rules-group">
+          <div class="rules-group-title">Schedule</div>
+          <div class="rules-line">Work Mon–Fri 8:30–17:00, Sat 8:30–12:30</div>
+          <div class="rules-line">Daily: walk + podcast after work, plank right after the walk</div>
+          <div class="rules-line">Tuesday: discography discovery, at work</div>
+          <div class="rules-line">Thursday: radio, at work</div>
+          <div class="rules-line">Friday 13:00–14:30 work break: junk food + YouTube allowance</div>
+          <div class="rules-line">Saturday evening: TikTok allowance</div>
+          <div class="rules-line">Sunday midday: movie/series one week, reading the next — alternating</div>
+        </div>
+        <div class="rules-group">
+          <div class="rules-group-title">Spacing — ranked by danger</div>
+          <div class="rules-line">Vaping (highest risk): 1st of the month only, 10 hits max — goal is to stretch this out, then quit</div>
+          <div class="rules-line">Masturbation without porn (lowest risk of the three): 1st of the month only</div>
+          <div class="rules-line">Porn itself: off the table entirely, not spaced — just out</div>
+          <div class="rules-line">Junk food (moderate risk): Friday work break only</div>
+          <div class="rules-line">TikTok: Saturday evening only</div>
+        </div>
+        <div class="rules-group">
+          <div class="rules-group-title">Work discipline</div>
+          <div class="rules-line">No procrastination on Fiverr or office tasks — start within 24 hours of being asked, with intention, not panic</div>
+        </div>
+      </div>
+    </div>
+    <div class="quote-card" id="quoteCard">
+      <div class="quote-eyebrow">✦ Today's signal</div>
+      <div class="quote-text" id="quoteText">—</div>
+      <div class="quote-tag" id="quoteTag"></div>
+    </div>
+    <div class="section-label"><span id="todayLabel">Today</span><span class="line"></span></div>
+    <div id="todayTasks"></div>
+  </div>
+
+  <!-- WEEK VIEW -->
+  <div class="view" id="view-week">
+    <div class="section-label">This week's orbit<span class="line"></span></div>
+    <div class="orbit-wrap" id="weekOrbit"></div>
+  </div>
+
+  <!-- LIMITS VIEW -->
+  <div class="view" id="view-limits">
+    <div class="section-label">Spacing — the danger ranking<span class="line"></span></div>
+    <div id="limitsList"></div>
+  </div>
+
+  <!-- JOURNAL VIEW -->
+  <div class="view" id="view-journal">
+    <div class="section-label">Share your thoughts<span class="line"></span></div>
+    <textarea class="journal-input" id="journalText" placeholder="What's on your mind? Progress, struggles, overthinking spirals, anything..."></textarea>
+    <div class="mood-row" id="moodRow">
+      <div class="mood-chip" data-mood="rough">😔</div>
+      <div class="mood-chip" data-mood="meh">😐</div>
+      <div class="mood-chip" data-mood="ok">🙂</div>
+      <div class="mood-chip" data-mood="good">😊</div>
+      <div class="mood-chip" data-mood="great">🚀</div>
+    </div>
+    <button class="btn-save" id="saveEntry">Save entry & reflect</button>
+    <div class="reflection-box" id="reflectionBox">
+      <div class="rtitle">Reflection</div>
+      <div id="reflectionText"></div>
+    </div>
+    <div class="section-label" style="margin-top:26px;">Past entries<span class="line"></span></div>
+    <div id="entriesList"></div>
+  </div>
+
+  <!-- PROGRESS VIEW -->
+  <div class="view" id="view-progress">
+    <div class="level-card">
+      <div class="level-name" id="levelName">Stardust</div>
+      <div class="level-sub" id="levelSub">0 pts toward next level</div>
+      <div class="level-track"><div class="level-fill" id="levelFill" style="width:0%"></div></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="sval" id="streakVal">0</div><div class="slabel">Day streak</div></div>
+      <div class="stat-card"><div class="sval" id="weekVal">0%</div><div class="slabel">This week done</div></div>
+      <div class="stat-card"><div class="sval" id="totalPoints">0</div><div class="slabel">Total points</div></div>
+      <div class="stat-card"><div class="sval" id="totalRelapses">0</div><div class="slabel">Logged slips</div></div>
+    </div>
+    
+    <div class="section-label">Data Vault<span class="line"></span></div>
+    <div class="backup-card">
+      <div style="font-size:11px; color:var(--text-dim); line-height:1.4;">
+        Since progress is stored locally on this phone, export a backup occasionally to ensure you never lose your data.
+      </div>
+      <div class="backup-row">
+        <button class="btn-backup primary" id="exportBtn"><span>💾</span> Export Orbit</button>
+        <button class="btn-backup" id="importBtn"><span>📁</span> Import Orbit</button>
+      </div>
+      <input type="file" id="fileInput" style="display:none" accept=".json">
+    </div>
+
+    <div class="section-label">Since last slip<span class="line"></span></div>
+    <div id="cleanStreaks"></div>
+    <div class="section-label">Recent activity<span class="line"></span></div>
+    <div id="activityLog"></div>
+  </div>
+
+</div>
+
+<div class="bottomnav">
+  <div class="bn-inner">
+    <div class="bn-item active" data-view="today"><span class="ic">☀</span>Today</div>
+    <div class="bn-item" data-view="week"><span class="ic">✦</span>Week</div>
+    <div class="bn-item" data-view="limits"><span class="ic">◐</span>Spacing</div>
+    <div class="bn-item" data-view="journal"><span class="ic">✎</span>Journal</div>
+    <div class="bn-item" data-view="progress"><span class="ic">◈</span>Progress</div>
+  </div>
+</div>
+
+<script>
+/* ============ NEBULA CANVAS BACKGROUND ============ */
+const canvas = document.getElementById('nebula-canvas');
+const ctx = canvas.getContext('2d');
+let W,H;
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();
+window.addEventListener('resize',resize);
+
+const stars = Array.from({length:140},()=>({
+  x:Math.random()*W*1,
+  y:Math.random()*H*1,
+  r:Math.random()*1.4+0.3,
+  baseAlpha:Math.random()*0.6+0.2,
+  speed:Math.random()*0.15+0.02,
+  tw:Math.random()*Math.PI*2
+}));
+
+const nebulaBlobs = [
+  {x:0.2,y:0.15,r:0.5,c:'107,79,232'},
+  {x:0.85,y:0.25,r:0.45,c:'217,70,168'},
+  {x:0.5,y:0.85,r:0.55,c:'79,214,232'},
+  {x:0.1,y:0.8,r:0.4,c:'107,79,232'}
+];
+
+let intensity = 0.35;
+function setIntensity(v){intensity = Math.max(0.25,Math.min(1,v));}
+
+function drawNebula(t){
+  ctx.fillStyle = '#0B0E2E';
+  ctx.fillRect(0,0,W,H);
+  nebulaBlobs.forEach((b,i)=>{
+    const cx = b.x*W + Math.sin(t*0.00008 + i)*40;
+    const cy = b.y*H + Math.cos(t*0.00006 + i)*40;
+    const r = b.r*Math.max(W,H);
+    const grad = ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+    grad.addColorStop(0,`rgba(${b.c},${0.16*intensity})`);
+    grad.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,W,H);
+  });
+  stars.forEach(s=>{
+    s.tw += s.speed;
+    const a = s.baseAlpha * (0.6+0.4*Math.sin(s.tw)) * (0.7+0.3*intensity);
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(244,242,250,${a})`;
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fill();
+  });
+}
+function loop(t){ drawNebula(t||0); requestAnimationFrame(loop); }
+loop(0);
+
+/* ============ DATA / LOGIC ============ */
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const QUOTES = [
+  {t:"The universe owes you nothing, which is exactly why today's walk is worth taking on its own terms.",tag:"on absurdism"},
+  {t:"Meaning isn't found waiting at the end of the week. It's assembled, badly, one Tuesday at a time.",tag:"on structure"},
+  {t:"The vape hits in ten seconds and forgets you in twenty. The walk takes thirty minutes and remembers you for years.",tag:"on cheap dopamine"},
+  {t:"Nihilism doesn't say nothing matters. It just refuses to pretend something matters before you've decided it does.",tag:"on nihilism"},
+  {t:"You don't need the universe to have a plot. You just need today to have a shape.",tag:"on structure"},
+  {t:"Boredom is not the enemy. Boredom is the waiting room before you choose what to build next.",tag:"on boredom"},
+  {t:"An overthought thought is just a regular thought that forgot to stop talking.",tag:"on overthinking"},
+  {t:"The algorithm doesn't want you happy. It wants you open. Those aren't the same app.",tag:"on attention"},
+  {t:"Discipline is just kindness to the version of you that exists tomorrow morning.",tag:"on discipline"},
+  {t:"Absurdism isn't giving up on meaning — it's refusing to wait for permission to make your own.",tag:"on absurdism"},
+  {t:"A craving is a weather system. It moves through. You don't have to invite it inside.",tag:"on cravings"},
+  {t:"You don't need a reason to exist. You just need a reason to get off the couch in the next ten minutes.",tag:"on structure"}
+];
+
+function getDailyQuote(){
+  const d = new Date();
+  const seed = d.getFullYear()*372 + (d.getMonth()+1)*31 + d.getDate();
+  return QUOTES[seed % QUOTES.length];
+}
+
+const WEEK_TASKS = {
+  1:[{id:'walk',label:'Walk + podcast',pts:10},{id:'plank',label:'Plank (post-walk)',pts:6}],
+  2:[{id:'walk',label:'Walk + podcast',pts:10},{id:'plank',label:'Plank (post-walk)',pts:6},{id:'discog',label:'Discography discovery',pts:8}],
+  3:[{id:'walk',label:'Walk + podcast',pts:10},{id:'plank',label:'Plank (post-walk)',pts:6}],
+  4:[{id:'walk',label:'Walk + podcast',pts:10},{id:'plank',label:'Plank (post-walk)',pts:6},{id:'radio',label:'Radio (at work)',pts:8}],
+  5:[{id:'junk',label:'Junk food (work break)',pts:5},{id:'youtube',label:'YouTube (work break)',pts:5},{id:'walk',label:'Walk + podcast',pts:10},{id:'plank',label:'Plank (post-walk)',pts:6}],
+  6:[{id:'tiktok',label:'TikTok evening',pts:5}],
+  0:[{id:'sunday_main',label:'',pts:12}]
+};
+
+function getWeekNumber(d){
+  const start = new Date(d.getFullYear(),0,1);
+  return Math.ceil((((d-start)/86400000)+start.getDay()+1)/7);
+}
+function sundayIsMovie(d){ return getWeekNumber(d)%2===0; }
+function dateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function tasksForDate(d){
+  const dow = d.getDay();
+  let tasks = JSON.parse(JSON.stringify(WEEK_TASKS[dow]));
+  if(dow===0){
+    const movie = sundayIsMovie(d);
+    tasks[0].label = movie ? 'Movie or series (midday)' : 'Reading session (midday)';
+    tasks[0].id = movie ? 'sunday_movie' : 'sunday_read';
+  }
+  return tasks;
+}
+
+/* ============ STORAGE ============ */
+const STORE_KEY = 'nebula_state_v1';
+const DEFAULT_STATE = { checks:{}, points:0, entries:[], history:[], relapses:{} };
+let memory = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+function loadFromStorage(){
+  try{
+    const saved = localStorage.getItem(STORE_KEY);
+    if(saved) memory = Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), JSON.parse(saved));
+  }catch(e){ console.error('Load failed'); }
+}
+
+function saveToStorage(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(memory)); }
+  catch(e){ console.error('Save failed'); }
+}
+
+/* ============ EXPORT / IMPORT ============ */
+document.getElementById('exportBtn').onclick = () => {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(memory));
+  const downloadAnchorNode = document.createElement('a');
+  downloadAnchorNode.setAttribute("href", dataStr);
+  downloadAnchorNode.setAttribute("download", "nebula_orbit_backup.json");
+  document.body.appendChild(downloadAnchorNode);
+  downloadAnchorNode.click();
+  downloadAnchorNode.remove();
+  showNotif("Backup file created.");
+};
+
+document.getElementById('importBtn').onclick = () => {
+  document.getElementById('fileInput').click();
+};
+
+document.getElementById('fileInput').onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const imported = JSON.parse(event.target.result);
+      if (confirm("Restore from backup? This will overwrite your current progress on this phone.")) {
+        memory = imported;
+        saveToStorage();
+        location.reload();
+      }
+    } catch (err) {
+      alert("Error: Invalid backup file.");
+    }
+  };
+  reader.readAsText(file);
+};
+
+/* ============ SYNC UI ============ */
+function syncAll(){
+  document.getElementById('topPoints').textContent = memory.points;
+  renderToday();
+  renderWeek();
+  renderLimits();
+  renderProgress();
+}
+
+function renderToday(){
+  const d = new Date();
+  const key = dateKey(d);
+  document.getElementById('todayLabel').textContent = DAY_NAMES[d.getDay()]+' · '+d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  const tasks = tasksForDate(d);
+  const container = document.getElementById('todayTasks');
+  container.innerHTML = '';
+  const card = document.createElement('div');
+  card.className = 'day-card today';
+  card.innerHTML = `<div class="day-node">${DAY_NAMES[d.getDay()].slice(0,2).toUpperCase()}</div><div class="day-body"><div class="dname">${DAY_NAMES[d.getDay()]}</div><div class="dsub">${tasks.length} tasks</div><div class="day-tasks"></div></div>`;
+  const taskWrap = card.querySelector('.day-tasks');
+  tasks.forEach(t=>{
+    const checked = !!(memory.checks[key] && memory.checks[key][t.id]);
+    const el = document.createElement('div');
+    el.className = 'task'+(checked?' checked':'');
+    el.innerHTML = `<div class="box"></div><div class="label">${t.label}</div><div class="pts">+${t.pts}</div>`;
+    el.onclick = ()=> toggleTask(key,t,el);
+    taskWrap.appendChild(el);
+  });
+  container.appendChild(card);
+}
+
+function toggleTask(key,t,el){
+  if(!memory.checks[key]) memory.checks[key]={};
+  const isChecked = !!memory.checks[key][t.id];
+  if(isChecked){
+    delete memory.checks[key][t.id];
+    memory.points -= t.pts;
+    el.classList.remove('checked');
+  }else{
+    memory.checks[key][t.id]=true;
+    memory.points += t.pts;
+    el.classList.add('checked');
+    showPointToast('+'+t.pts+' pts');
+    memory.history.unshift(`Completed "${t.label}" — +${t.pts} pts`);
+  }
+  saveToStorage();
+  syncAll();
+}
+
+function showPointToast(text){
+  const el = document.getElementById('pointToast');
+  el.textContent = '⭐ '+text;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),1400);
+}
+
+function showNotif(text){
+  document.getElementById('notifText').textContent = text;
+  document.getElementById('notifBanner').classList.add('show');
+  setTimeout(()=>document.getElementById('notifBanner').classList.remove('show'),6000);
+}
+
+/* ============ WEEK VIEW ============ */
+function renderWeek(){
+  const wrap = document.getElementById('weekOrbit');
+  wrap.innerHTML='';
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate()-today.getDay());
+  for(let i=0;i<7;i++){
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate()+i);
+    const key = dateKey(d);
+    const tasks = tasksForDate(d);
+    const isToday = dateKey(d)===dateKey(today);
+    const doneCount = tasks.filter(t=>memory.checks[key] && memory.checks[key][t.id]).length;
+    const allDone = tasks.length>0 && doneCount===tasks.length;
+    const card = document.createElement('div');
+    card.className='day-card'+(isToday?' today':'');
+    card.innerHTML = `<div class="day-node ${allDone?'done-full':''}">${DAY_NAMES[d.getDay()].slice(0,2).toUpperCase()}</div><div class="day-body"><div class="dname">${DAY_NAMES[d.getDay()]}</div><div class="dsub">${doneCount}/${tasks.length} done</div></div>`;
+    wrap.appendChild(card);
+  }
+}
+
+/* ============ SPACING ============ */
+const LIMITS = [
+  {id:'vape', name:'Vaping', icon:'🌫️', type:'monthly_fixed', day:1},
+  {id:'mast', name:'Masturbation', icon:'◐', type:'monthly_fixed', day:1},
+  {id:'junk', name:'Junk food', icon:'🍔', type:'weekly_fixed', day:5},
+  {id:'tiktok', name:'TikTok', icon:'📱', type:'weekly_fixed', day:6}
+];
+const RELAPSE_ONLY = [{id:'porn', name:'Porn', icon:'⛔'}];
+
+function renderLimits(){
+  const wrap = document.getElementById('limitsList');
+  wrap.innerHTML='';
+  [...LIMITS, ...RELAPSE_ONLY].forEach(l=>{
+    const card = document.createElement('div');
+    card.className='limit-card';
+    card.innerHTML = `<div class="limit-top"><div class="limit-name">${l.icon} ${l.name}</div></div><button class="btn-reset" onclick="logRelapse('${l.id}','${l.name}')">Logged slip</button>`;
+    wrap.appendChild(card);
+  });
+}
+
+window.logRelapse = (id, name) => {
+  if(confirm(`Log slip for ${name}? (-10 pts)`)){
+    memory.relapses[id] = new Date().toISOString();
+    memory.points = Math.max(0, memory.points - 10);
+    memory.history.unshift(`Slip: ${name} logged.`);
+    saveToStorage();
+    syncAll();
+  }
+};
+
+/* ============ JOURNAL ============ */
+document.getElementById('saveEntry').onclick = () => {
+  const text = document.getElementById('journalText').value.trim();
+  if(!text) return;
+  memory.entries.unshift({ date: new Date().toISOString(), text });
+  memory.points += 4;
+  document.getElementById('journalText').value = '';
+  saveToStorage();
+  syncAll();
+  renderEntries();
+};
+
+function renderEntries(){
+  const wrap = document.getElementById('entriesList');
+  wrap.innerHTML='';
+  memory.entries.forEach(e=>{
+    const el = document.createElement('div');
+    el.className='entry';
+    el.innerHTML = `<div class="entry-top"><span>${new Date(e.date).toLocaleDateString()}</span></div><div class="entry-text">${e.text}</div>`;
+    wrap.appendChild(el);
+  });
+}
+
+/* ============ PROGRESS ============ */
+function renderProgress(){
+  document.getElementById('totalPoints').textContent = memory.points;
+  const log = document.getElementById('activityLog');
+  log.innerHTML = memory.history.slice(0,10).map(h => `<div class="entry"><div class="entry-text">${h}</div></div>`).join('');
+  setIntensity(0.3 + Math.min(0.7, memory.points/700));
+}
+
+/* ============ NAV ============ */
+function switchView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.tab, .bn-item').forEach(t=>t.classList.toggle('active',t.dataset.view===name));
+}
+document.querySelectorAll('.tab, .bn-item').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
+
+/* ============ INIT ============ */
+loadFromStorage();
+syncAll();
+renderEntries();
+const q = getDailyQuote();
+document.getElementById('quoteText').textContent = q.t;
+document.getElementById('quoteTag').textContent = q.tag;
+setTimeout(() => document.getElementById('loadingScreen').remove(), 500);
+
+document.getElementById('rulesToggle').onclick = () => {
+  document.getElementById('rulesBody').classList.toggle('open');
+  document.getElementById('rulesChevron').classList.toggle('open');
+};
+</script>
+</body>
+</html>
